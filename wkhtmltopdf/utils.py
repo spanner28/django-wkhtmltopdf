@@ -126,6 +126,7 @@ def wkhtmltopdf(pages, output=None, **kwargs):
 
     cmd = 'WKHTMLTOPDF_CMD'
     cmd = getattr(settings, cmd, os.environ.get(cmd, 'wkhtmltopdf'))
+    cmd = 'xvfb-run --server-args="-screen 0, 1024x768x24" %s' % cmd
 
     # Adding 'cover' option to add cover_file to the pdf to generate.
     if has_cover:
