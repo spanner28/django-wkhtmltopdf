@@ -126,6 +126,7 @@ def wkhtmltopdf(pages, output=None, **kwargs):
 
     cmd = 'WKHTMLTOPDF_CMD'
     cmd = getattr(settings, cmd, os.environ.get(cmd, 'wkhtmltopdf'))
+    #TODO: reuse existing xvfb display
     cmd = 'xvfb-run --server-args="-screen 0, 1024x768x24" %s' % cmd
 
     # Adding 'cover' option to add cover_file to the pdf to generate.
@@ -312,10 +313,6 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
                              bufsize=-1, suffix='.html', prefix='tmp',
                              dir=None, delete=True):
     try:
-        render = template.render
-    except AttributeError:
-        content = loader.render_to_string(template, context)
-    else:
         if django.VERSION < (1, 8):
             # If using a version of Django prior to 1.8, ensure ``context`` is an
             # instance of ``Context``
@@ -325,9 +322,11 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
                 else:
                     context = Context(context)
             # Handle error when ``request`` is None
-            content = render(context)
+            content = template.render(context)
         else:
-            content = render(context, request)
+            content = template.render(context, request)
+    except AttributeError:
+        content = loader.render_to_string(template, context)
     content = smart_text(content)
     content = make_absolute_paths(content)
 
